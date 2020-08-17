@@ -3,6 +3,7 @@ package com.example.ccfapp;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -13,6 +14,7 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.auth0.android.jwt.JWT;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -22,6 +24,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -89,6 +94,30 @@ public class UserLoginActivity extends AppCompatActivity {
                         });
                     }
                     else {
+                        try {
+                            JSONObject obj = new JSONObject(dataString);
+                            String token = obj.getString("token");
+                            SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putString("jtw_token", token);
+                            editor.commit();
+
+                            String cached_token = sharedPreferences.getString("jtw_token", "");
+                            JWT jwt = new JWT(cached_token);
+                            Date expiresAt = jwt.getExpiresAt();
+                            Format formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            Log.e("token", cached_token);
+                            Log.e("expiration_date", formatter.format(expiresAt));
+                            Log.e("expired_bool", Boolean.toString(jwt.isExpired(10)));
+
+
+
+
+                        } catch (JSONException e) {
+                            Log.e("MYAPP", "unexpected JSON exception", e);
+                        }
+
+
                         Intent intent = new Intent(UserLoginActivity.this, MapsActivity.class);
                         startActivity(intent);
                     }
